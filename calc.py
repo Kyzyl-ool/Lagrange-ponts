@@ -19,7 +19,7 @@ rC_y = 0
 r_L4_x = r4_x + rC_x
 r_L4_y = r4_y + rC_y
 
-L4 = ((r_L4_x)**2 + (r_L4_y)**2)**0.5
+L4 = ((r_L4_x)**2 + (r_L4_y)**2)**0.5w
 
 print('L4 =', (((Omega*V)**2+G*M_Sun)**0.5-V*Omega)**0.5)
 
