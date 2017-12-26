@@ -5,17 +5,16 @@ Program SunSystem;
 Uses crt, gl, glut, Physics, Points;
 
 Const
-	dp_x = 100;
-	dp_y = 100;
-	eps  = 0.02;
+	constant = 0.3411;
 
 Var planets: array[0..2] of MatPoint;
 tabbed, take: boolean;
-time: real;
-dVx, dVy: real;
-V: real;
+time: Extended;
+dVx, dVy: Extended;
+V: Extended;
+prev: Extended;
 
-Procedure glWrite(x, y: real; Font: Pointer; Text: string); // процедура рисования строки на графическом экране
+Procedure glWrite(x, y: Extended; Font: Pointer; Text: string); // процедура рисования строки на графическом экране
 Var i: word;
 begin
 	glRasterPos2f(x, y);
@@ -33,7 +32,7 @@ end;
 
 Procedure draw; cdecl;
 Var i: byte; bufer: string;
-	_x, _y, __x, __y: real;
+	_x, _y, __x, __y: Extended;
 begin
 	glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
 	glPointSize(2);
@@ -46,8 +45,10 @@ begin
 	glWrite(0.2, 0.4, GLUT_BITMAP_9_BY_15, 'Press "+" and "-" for resizing');
 	str(time/365.2563/86400:6:2, bufer);
 	glWrite(0.2, 0.8, GLUT_BITMAP_9_BY_15, 'Time: '+bufer+' years');
-	str(phi:6:2, bufer);
+{
+	str(phi/2/pi*360:6:2, bufer);
 	glWrite(0.2, 1.0, GLUT_BITMAP_9_BY_15, 'Angle: '+bufer+'.');
+}
 	
 	if tabbed
 		then
@@ -98,16 +99,21 @@ begin
 	glEnd;
 	
 	
-	if (sqrt(sqr(__x/k - planets[2].x)+sqr(__y/k - planets[2].y)) < eps)
+	if (take) and (sqr(__x/k - planets[2].x)+sqr(__y/k - planets[2].y) - prev > 0)
 		then
-			take_impulse;
+			begin
+				take_impulse;
+				take := false;
+				writeln('eps = ', sqr(__x/k - planets[2].x)+sqr(__y/k - planets[2].y):20:10);
+			end;
 	
+	prev:=sqr(__x/k - planets[2].x)+sqr(__y/k - planets[2].y);
 	
 	glFlush;
 end;
 
 Procedure refresh; cdecl;
-Var i, j: shortint; r, sx, sy, bufer: real;
+Var i, j: shortint; r, sx, sy, bufer: Extended;
 begin
 	time:=time+KT*dt;
 	for i:=1 to 2 do
@@ -126,29 +132,20 @@ begin
 				planets[i].GetAcceleration(sx, sy);
 				planets[i].MakeStep;
 		end;
-	if (time_for_second)
-		then
-			begin
-{
-				planets[2].AddVelocity(-planets[2].Vx + planets[1].Vx, -planets[2].Vy + planets[1].Vy);
-}
-				time_for_second:=false;
-				time_for_second_ended:=true;
-			end;
 	
 	phi:=phi+KT*dt*2*pi/365.2563/86400;
 	V:=2*pi/365.2563/86400*KT*sqrt(sqr(planets[2].x)+sqr(planets[2].y));
+	
 	if not take
 		then
 			begin
-				dVx:= -(planets[2].Vx) + 1.01*(planets[1].x - planets[2].x)/3;
-				dVy:= -(planets[2].Vy) + (planets[1].y - planets[2].y)/3;
+				dVx:= -(planets[2].Vx) + constant*(planets[1].x - planets[2].x);
+				dVy:= -(planets[2].Vy) + constant*(planets[1].y - planets[2].y);
 			end
 		else
 			begin
-				
-				dVx:= -(planets[2].Vx) - V/sqrt(1+sqr(planets[2].x/planets[2].y));
-				dVy:= -(planets[2].Vy) + planets[2].x/planets[2].y*V/sqrt(1+sqr(planets[2].x/planets[2].y));
+				dVx:= -(planets[2].Vx) - V*planets[2].y/sqrt(sqr(planets[2].x)+sqr(planets[2].y));
+				dVy:= -(planets[2].Vy) + V*planets[2].x/sqrt(sqr(planets[2].x)+sqr(planets[2].y));
 			end;
 	
 	
@@ -177,8 +174,8 @@ end;
 
 Var i: shortint;
 Begin
-	dt:=0.06;
-	k:=0.0625;
+	dt:=0.001;
+	k:=3;
 	KG:=6.67e-11;
 	px:=0; py:=0;
 	time:=0;
@@ -187,8 +184,6 @@ Begin
 	tabbed:=false;
 	affin:=false;
 	take:=false;
-	time_for_second:=false;
-	time_for_second_ended:=false;
 	
 	//Инициализации
 	
@@ -236,7 +231,6 @@ Begin
 	planets[2]:=MatPoint.Create;
 	planets[2].Init_DL(KR/2, 129557400406.15, 1, 1, 1, 24622000/KR, 1e3, -25792.834600911938, 14891.499999999998);
 	
-	
 	glutInit(@argc, argv);
 	glutInitWindowSize(650, 650);
 	glutInitWindowPosition(30, 30);
@@ -249,10 +243,12 @@ Begin
 	
 	glOrtho(0, 10, 0, 10, -1, 1);
 	
+	
 	glutDisplayFunc(@draw);
 	glutIdleFunc(@refresh);
 	glutKeyboardFunc(@kbd);
 	
 	glutMainLoop();
+	
 	for i:=0 to 2 do planets[i].Destroy;
 End.

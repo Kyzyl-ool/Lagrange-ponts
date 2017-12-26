@@ -10,33 +10,31 @@ Const
 	wsx=10; wsy=10;
 	
 Var
-	KG, k, k2, px, py, dt: real;
-	phi: real;
+	KG, k, k2, px, py, dt: Extended;
+	phi: Extended;
 	affin: boolean;
-	time_for_second: boolean;
-	time_for_second_ended: boolean;
 
 Type MatPoint = class(Point)
 	Public
-		m: real;
-		Vx, Vy: real;
-		ax, ay: real;
-		radius: real;
+		m: Extended;
+		Vx, Vy: Extended;
+		ax, ay: Extended;
+		radius: Extended;
 					
 		Constructor Create;
 		Destructor Destroy; override;
 					
-		Procedure Init_DL(ix, iy, ir, ig, ib, iradius, im, iVx, iVy: real);
-		Procedure GetAcceleration(iax, iay: real);
+		Procedure Init_DL(ix, iy, ir, ig, ib, iradius, im, iVx, iVy: Extended);
+		Procedure GetAcceleration(iax, iay: Extended);
 		Procedure MakeStep;
 		Procedure Show;
-		Procedure AddVelocity(dp_x, dp_y: real);
+		Procedure AddVelocity(dp_x, dp_y: Extended);
 		
-		Function GetVx: real;
-		Function GetVy: real;
-		Function GetX: real;
-		Function GetY: real;
-		Function GetMass: real;
+		Function GetVx: Extended;
+		Function GetVy: Extended;
+		Function GetX: Extended;
+		Function GetY: Extended;
+		Function GetMass: Extended;
 end;
 
 Implementation
@@ -61,9 +59,9 @@ begin
 end;
 
 Procedure MatPoint.Show;
-Var l: real; i: byte;
-	_x, _y: real;
-	__x, __y: real;
+Var l: Extended; i: byte;
+	_x, _y: Extended;
+	__x, __y: Extended;
 begin
 		if k*radius>5e-2
 			then
@@ -114,19 +112,14 @@ begin
 								end
 							else
 								glVertex2f(_x + wsx/2, _y + wsy/2);
-						if ((__y + 2 < wsy/2) and (not time_for_second_ended))
-										then
-											time_for_second:= true;
 					glEnd;
 				end;
-
+				
 	
-		
-
 	glEnd;
 end;
 
-Procedure MatPoint.Init_DL(ix, iy, ir, ig, ib, iradius, im, iVx, iVy: real);
+Procedure MatPoint.Init_DL(ix, iy, ir, ig, ib, iradius, im, iVx, iVy: Extended);
 begin
 	inherited Init(ix/KR, iy/KR, ir, ig, ib);
 	m:=im/KM;
@@ -135,38 +128,38 @@ begin
 	radius:=iradius;
 end;
 
-Procedure MatPoint.GetAcceleration(iax, iay: real);
+Procedure MatPoint.GetAcceleration(iax, iay: Extended);
 begin
 	ax:=iax;
 	ay:=iay;
 end;
 
-Function MatPoint.GetVx: real;
+Function MatPoint.GetVx: Extended;
 begin
 	GetVx:=Vx;
 end;
 
-Function MatPoint.GetVy: real;
+Function MatPoint.GetVy: Extended;
 begin
 	GetVy:=Vy;
 end;
 
-Function MatPoint.GetX: real;
+Function MatPoint.GetX: Extended;
 begin
 	GetX:=x;
 end;
 
-Function MatPoint.GetY: real;
+Function MatPoint.GetY: Extended;
 begin
 	GetY:=y;
 end;
 
-Function MatPoint.GetMass: real;
+Function MatPoint.GetMass: Extended;
 begin
 	GetMass:=m;
 end;
 
-Procedure MatPoint.AddVelocity(dp_x, dp_y: real);
+Procedure MatPoint.AddVelocity(dp_x, dp_y: Extended);
 begin
 	Vx:=Vx + dp_x;
 	Vy:=Vy + dp_y;
